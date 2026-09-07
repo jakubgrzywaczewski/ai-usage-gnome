@@ -1,18 +1,24 @@
 # AI Usage
 
-GNOME tray application for tracking remaining Claude, Codex, and GitHub Copilot usage limits on Linux.
+GNOME tray application for tracking Claude, Codex, and GitHub Copilot usage limits on Linux.
+
+## Screenshots
+
+| Tray menu | Settings |
+| --- | --- |
+| ![Tray menu with per-window usage bars](screenshots/tray-menu.png) | ![Settings window, Accounts tab](screenshots/settings-accounts.png) |
 
 ## Features
 
-- GNOME system tray icon showing usage percentages for each provider.
-- Click the tray icon to open a usage panel with detailed metrics.
+- GNOME system tray icon showing consumed usage per provider (`AI Claude 18% Codex 28%`).
+- Tray menu lists each usage window with a progress bar; click a row or the panel item to open the full usage panel. Middle-clicking the tray icon opens it directly.
 - Claude tracking for 5-hour and 7-day usage windows.
-- Codex tracking for 5-hour, weekly, and credit usage.
+- Codex tracking for 5-hour, weekly, spark, and credit usage.
 - GitHub Copilot monthly quota tracking.
 - Configurable refresh cadence, visible providers, and language (English / Polish).
 - Desktop notifications for ahead/behind-schedule usage and early resets.
 - Credentials stored securely in GNOME Keyring via libsecret.
-- Settings window with tabs for Accounts, Display, Notifications, Logs, and About.
+- Settings window with tabs for Accounts, Appearance, Notifications, Logs, and About.
 
 ## Requirements
 
