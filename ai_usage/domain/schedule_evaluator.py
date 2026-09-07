@@ -65,6 +65,20 @@ def _period_range(metric: UsageMetric, now: datetime) -> Optional[tuple[datetime
     return None
 
 
+def _same_reset(a: Optional[datetime], b: Optional[datetime]) -> bool:
+    """Treat two reset timestamps as the same window.
+
+    The upstream APIs return a ``resets_at`` value that jitters by fractions of
+    a second (sometimes a few minutes) on every poll, so an exact comparison
+    would make the alert state look like a brand-new window each refresh and
+    re-fire the notification. A genuine early reset moves the timestamp by far
+    more than this tolerance.
+    """
+    if a is None or b is None:
+        return a is b
+    return abs((a - b).total_seconds()) <= 5 * 60
+
+
 class ScheduleEvaluator:
     TRIGGER = 0.18
     REARM_MARGIN = 0.10
@@ -135,7 +149,7 @@ class ScheduleEvaluator:
 
         should_reset = (
             previous_state is None
-            or previous_state.last_reset_at_utc != metric.reset_at_utc
+            or not _same_reset(previous_state.last_reset_at_utc, metric.reset_at_utc)
             or previous_state.direction != direction
             or previous_state.metric_kind != metric.kind
         )
