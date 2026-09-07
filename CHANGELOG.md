@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-07
+
+### Added
+- MIT license, contributing guide and changelog.
+- Unit test suite (`pytest`) for the provider parsers, the schedule evaluator and localization coverage.
+- GitHub Actions CI running `pytest` (Python 3.10–3.12) and `ruff` on pushes and pull requests.
+- Ubuntu autostart instructions in the README.
+
+### Changed
+- Applied `ruff` autofixes across the codebase (import order, modern typing); no behaviour change.
+
 ## [0.4.2] - 2026-09-07
 
 ### Changed
@@ -46,7 +57,8 @@ All notable changes to this project are documented here. The format is based on
 
 - Initial public version: GNOME tray app tracking Claude, Codex, and GitHub Copilot usage.
 
-[Unreleased]: https://github.com/jakubgrzywaczewski/ai-usage-gnome/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/jakubgrzywaczewski/ai-usage-gnome/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/jakubgrzywaczewski/ai-usage-gnome/compare/v0.4.2...v0.5.0
 [0.4.2]: https://github.com/jakubgrzywaczewski/ai-usage-gnome/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/jakubgrzywaczewski/ai-usage-gnome/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/jakubgrzywaczewski/ai-usage-gnome/compare/v0.3.0...v0.4.0
