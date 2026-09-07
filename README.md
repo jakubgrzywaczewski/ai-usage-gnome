@@ -1,5 +1,8 @@
 # AI Usage
 
+[![CI](https://github.com/jakubgrzywaczewski/ai-usage-gnome/actions/workflows/ci.yml/badge.svg)](https://github.com/jakubgrzywaczewski/ai-usage-gnome/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 GNOME tray application for tracking Claude, Codex, and GitHub Copilot usage limits on Linux.
 
 ## Screenshots
@@ -100,6 +103,12 @@ toggles it).
 - Claude: local Claude Code OAuth from `~/.claude/.credentials.json`, usage from Anthropic's API.
 - Copilot: GitHub device flow OAuth, usage from GitHub's internal Copilot API.
 
-## Legal
+## Contributing
 
-The OpenAI logo, Claude logo, and GitHub Copilot logo are used only to identify their respective services. All trademarks belong to their respective owners. This project is independent and not affiliated with OpenAI, Anthropic, or GitHub.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Tests and lint run in CI on every pull request.
+
+## License
+
+[MIT](LICENSE).
+
+The OpenAI, Claude, and GitHub Copilot marks are used only to identify their respective services. All trademarks belong to their respective owners. This project is independent and not affiliated with OpenAI, Anthropic, or GitHub.
