@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="ai-usage",
-    version="0.3.0",
+    version="0.4.0",
     description="GNOME tray app for tracking Claude, Codex, and GitHub Copilot usage limits",
     author="jakubgrzywaczewski",
     url="https://github.com/jakubgrzywaczewski/ai-usage",
