@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-import locale as locale_mod
+
+_MONTHS = {
+    "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "pl": ["sty", "lut", "mar", "kwi", "maj", "cze",
+           "lip", "sie", "wrz", "paź", "lis", "gru"],
+}
 
 
 def format_reset_date(reset_at_utc: datetime, now: datetime, lang: str = "en") -> str:
@@ -10,8 +16,10 @@ def format_reset_date(reset_at_utc: datetime, now: datetime, lang: str = "en") -
 
     if local_reset > local_now and local_reset.date() == local_now.date():
         return local_reset.strftime("%H:%M")
-    else:
-        return local_reset.strftime("%d %b %Y, %H:%M")
+
+    months = _MONTHS.get(lang, _MONTHS["en"])
+    month = months[local_reset.month - 1]
+    return f"{local_reset.day:02d} {month} {local_reset.year}, {local_reset:%H:%M}"
 
 
 def format_relative_time(dt: datetime, now: datetime, lang: str = "en") -> str:
