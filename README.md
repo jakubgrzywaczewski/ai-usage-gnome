@@ -4,7 +4,7 @@ GNOME tray application for tracking Claude, Codex, and GitHub Copilot usage limi
 
 ## Screenshots
 
-![Usage panel with per-window bars and reset times](screenshots/usage-panel.png)
+![Usage panel with per-window bars and reset times](screenshots/panel.png)
 
 | Tray menu | Settings |
 | --- | --- |
