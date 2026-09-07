@@ -5,7 +5,7 @@ setup(
     version="0.4.2",
     description="GNOME tray app for tracking Claude, Codex, and GitHub Copilot usage limits",
     author="jakubgrzywaczewski",
-    url="https://github.com/jakubgrzywaczewski/ai-usage",
+    url="https://github.com/jakubgrzywaczewski/ai-usage-gnome",
     packages=find_packages(),
     package_data={"ai_usage": ["resources/*.svg"]},
     install_requires=[

@@ -51,6 +51,30 @@ Or directly:
 python -m ai_usage.main
 ```
 
+## Autostart (Ubuntu / GNOME)
+
+Start the tray app automatically on login by adding a desktop entry:
+
+```bash
+mkdir -p ~/.config/autostart
+cat > ~/.config/autostart/ai-usage.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Name=AI Usage
+Comment=Tray app for Claude, Codex, and GitHub Copilot usage limits
+Exec=$(command -v ai-usage)
+Icon=ai-usage
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true
+EOF
+```
+
+`$(command -v ai-usage)` writes the full path, so it works regardless of your
+login shell's `PATH`. To disable autostart later, delete the file or set
+`X-GNOME-Autostart-enabled=false` (GNOME Tweaks › Startup Applications also
+toggles it).
+
 ## Authentication
 
 ### Codex
