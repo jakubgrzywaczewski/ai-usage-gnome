@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import threading
 from datetime import datetime, timezone
-from typing import Optional
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib
 
@@ -12,13 +12,13 @@ from ai_usage.domain.localization import Localizer
 from ai_usage.domain.models import (
     DisplayPreferences,
     MenuBarSummaryItem,
+    MetricUnit,
     ProviderAuthState,
     ProviderFetchState,
     ProviderID,
     ProviderSnapshot,
     UsageMetric,
     UsageMetricKind,
-    MetricUnit,
 )
 from ai_usage.providers.claude_provider import ClaudeProvider
 from ai_usage.providers.codex_provider import CodexProvider
@@ -43,14 +43,14 @@ class AppEnvironment:
         self.copilot_provider = CopilotProvider(self.secret_store, self.log_store)
 
         self.snapshots: dict[ProviderID, ProviderSnapshot] = {}
-        self.last_refresh_at_utc: Optional[datetime] = None
+        self.last_refresh_at_utc: datetime | None = None
         self.is_refreshing = False
-        self.last_refresh_error: Optional[str] = None
+        self.last_refresh_error: str | None = None
 
-        self._tray: Optional[object] = None
-        self._panel_window: Optional[object] = None
-        self._settings_window: Optional[object] = None
-        self._refresh_timer_id: Optional[int] = None
+        self._tray: object | None = None
+        self._panel_window: object | None = None
+        self._settings_window: object | None = None
+        self._refresh_timer_id: int | None = None
 
         persisted = self.usage_store.load_snapshots()
         if persisted:
@@ -118,7 +118,7 @@ class AppEnvironment:
         self.usage_store.save_snapshots(self.snapshots)
         self._notify_ui()
 
-    def is_stale(self, reference_date: Optional[datetime] = None) -> bool:
+    def is_stale(self, reference_date: datetime | None = None) -> bool:
         if self.last_refresh_at_utc is None:
             return False
         ref = reference_date or datetime.now(timezone.utc)
@@ -194,7 +194,7 @@ class AppEnvironment:
     def _providers(self) -> list:
         return [self.codex_provider, self.claude_provider, self.copilot_provider]
 
-    def _menu_bar_fraction(self, provider: ProviderID) -> Optional[float]:
+    def _menu_bar_fraction(self, provider: ProviderID) -> float | None:
         snapshot = self.snapshots.get(provider)
         if snapshot is None:
             return None

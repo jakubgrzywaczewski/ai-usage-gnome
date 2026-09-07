@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Callable
 from pathlib import Path
-from typing import Optional, Callable
 
 from ai_usage.domain.localization import Localizer
 from ai_usage.domain.models import DisplayPreferences
@@ -24,7 +24,7 @@ def _config_dir() -> Path:
 
 
 class SettingsStore:
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, config_dir: Path | None = None):
         self._config_dir = config_dir or _config_dir()
         self._file = self._config_dir / "settings.json"
         self._preferences = self._load()

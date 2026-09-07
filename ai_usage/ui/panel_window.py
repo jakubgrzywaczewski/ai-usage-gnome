@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 import gi
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gdk, GLib, Gtk
 
 from ai_usage.domain.formatters import format_relative_time, format_reset_date
 from ai_usage.domain.localization import L10nKey
@@ -162,7 +163,6 @@ class PanelWindow(Gtk.Window):
     def _build_provider(self, provider: ProviderID, now: datetime):
         loc = self._env.localizer
         snapshot = self._env.snapshots.get(provider)
-        prefs = self._env.settings.preferences
 
         prov_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
 

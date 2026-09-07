@@ -3,7 +3,6 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 
 
 class ProviderID(str, enum.Enum):
@@ -107,13 +106,13 @@ class UsageAlertDirection(str, enum.Enum):
 @dataclass
 class UsageMetric:
     kind: UsageMetricKind
-    remaining_fraction: Optional[float] = None
-    remaining_value: Optional[float] = None
-    total_value: Optional[float] = None
+    remaining_fraction: float | None = None
+    remaining_value: float | None = None
+    total_value: float | None = None
     unit: MetricUnit = MetricUnit.PERCENTAGE
-    reset_at_utc: Optional[datetime] = None
-    last_updated_at_utc: Optional[datetime] = None
-    detail_text: Optional[str] = None
+    reset_at_utc: datetime | None = None
+    last_updated_at_utc: datetime | None = None
+    detail_text: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -146,12 +145,12 @@ class ProviderSnapshot:
     provider: ProviderID
     auth_state: ProviderAuthState = ProviderAuthState.SIGNED_OUT
     fetch_state: ProviderFetchState = ProviderFetchState.MISSING_AUTH
-    fetched_at_utc: Optional[datetime] = None
+    fetched_at_utc: datetime | None = None
     metrics: list[UsageMetric] = field(default_factory=list)
-    error_description: Optional[str] = None
-    source_description: Optional[str] = None
+    error_description: str | None = None
+    source_description: str | None = None
 
-    def metric(self, kind: UsageMetricKind) -> Optional[UsageMetric]:
+    def metric(self, kind: UsageMetricKind) -> UsageMetric | None:
         return next((m for m in self.metrics if m.kind == kind), None)
 
     def to_dict(self) -> dict:
@@ -182,9 +181,9 @@ class ProviderSnapshot:
 class UsageAlertState:
     direction: UsageAlertDirection
     metric_kind: UsageMetricKind
-    last_triggered_at_utc: Optional[datetime] = None
+    last_triggered_at_utc: datetime | None = None
     last_extreme_delta: float = 0.0
-    last_reset_at_utc: Optional[datetime] = None
+    last_reset_at_utc: datetime | None = None
     is_armed: bool = True
 
     def to_dict(self) -> dict:
@@ -212,7 +211,7 @@ class UsageAlertState:
 @dataclass
 class MenuBarSummaryItem:
     provider: ProviderID
-    remaining_fraction: Optional[float] = None
+    remaining_fraction: float | None = None
 
 
 class AppLanguage(str, enum.Enum):

@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import signal
-import sys
 
 
 def main():
     import gi
     gi.require_version("Gtk", "3.0")
-    from gi.repository import Gtk, GLib
+    from gi.repository import GLib, Gtk
 
     GLib.set_application_name("AI Usage")
     GLib.set_prgname("ai-usage")

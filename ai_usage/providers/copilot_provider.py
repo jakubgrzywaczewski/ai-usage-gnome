@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import time
-import webbrowser
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 from urllib.parse import urlencode
 
 import requests
@@ -20,7 +19,6 @@ from ai_usage.domain.models import (
 from ai_usage.services.log_store import LogStore
 from ai_usage.services.secret_store import SecretStore
 
-
 USAGE_URL = "https://api.github.com/copilot_internal/user"
 DEVICE_CODE_URL = "https://github.com/login/device/code"
 ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
@@ -35,7 +33,7 @@ def _next_reset(now: datetime) -> datetime:
     return now.replace(month=now.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
 
 
-def _number(value: Any) -> Optional[float]:
+def _number(value: Any) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, str):
@@ -46,7 +44,7 @@ def _number(value: Any) -> Optional[float]:
     return None
 
 
-def _find_number(payload: Any, candidate_keys: list[str]) -> Optional[float]:
+def _find_number(payload: Any, candidate_keys: list[str]) -> float | None:
     if isinstance(payload, dict):
         for key in candidate_keys:
             raw = payload.get(key)
@@ -74,7 +72,7 @@ def _normalized_string(value: Any) -> str:
     return ""
 
 
-def _quota_snapshot(payload: Any, quota_id_fallback: Optional[str] = None) -> Optional[dict]:
+def _quota_snapshot(payload: Any, quota_id_fallback: str | None = None) -> dict | None:
     if not isinstance(payload, dict):
         return None
     entitlement = _number(payload.get("entitlement"))
@@ -91,7 +89,7 @@ def _quota_snapshot(payload: Any, quota_id_fallback: Optional[str] = None) -> Op
     }
 
 
-def _parse_reset_date(value: Any) -> Optional[datetime]:
+def _parse_reset_date(value: Any) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
     for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d"):
@@ -120,7 +118,7 @@ def _gather_usage_items(payload: dict) -> list[dict]:
     return results
 
 
-def _parse_from_internal(payload: dict, now: datetime) -> Optional[UsageMetric]:
+def _parse_from_internal(payload: dict, now: datetime) -> UsageMetric | None:
     quota_snapshots = payload.get("quota_snapshots") or payload.get("quotaSnapshots") or {}
     if not isinstance(quota_snapshots, dict):
         return None
@@ -182,7 +180,7 @@ def _parse_from_internal(payload: dict, now: datetime) -> Optional[UsageMetric]:
     )
 
 
-def _parse_from_billing_session(payload: dict, now: datetime) -> Optional[UsageMetric]:
+def _parse_from_billing_session(payload: dict, now: datetime) -> UsageMetric | None:
     total = _find_number(payload, ["userPremiumRequestEntitlement", "filteredUserPremiumRequestEntitlement"]) or 0
     used = _find_number(payload, ["discountQuantity", "discount_quantity"]) or 0
     if total <= 0:
@@ -201,7 +199,7 @@ def _parse_from_billing_session(payload: dict, now: datetime) -> Optional[UsageM
     )
 
 
-def _parse_from_usage_report(payload: dict, now: datetime) -> Optional[UsageMetric]:
+def _parse_from_usage_report(payload: dict, now: datetime) -> UsageMetric | None:
     usage_items_raw = payload.get("usageItems")
     if isinstance(usage_items_raw, list) and not usage_items_raw:
         return UsageMetric(

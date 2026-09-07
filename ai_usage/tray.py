@@ -4,6 +4,7 @@ import os
 from typing import TYPE_CHECKING
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 
 try:
@@ -13,7 +14,7 @@ try:
 except (ValueError, ImportError):
     _HAS_INDICATOR = False
 
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk
 
 from ai_usage.domain.localization import L10nKey
 from ai_usage.domain.models import ProviderID, UsageMetricKind
@@ -62,7 +63,7 @@ class TrayIcon:
         if self._indicator:
             self._build_menu()
 
-    def _row_kinds(self, provider: "ProviderID") -> list:
+    def _row_kinds(self, provider: ProviderID) -> list:
         prefs = self._env.settings.preferences
         if provider == ProviderID.CLAUDE:
             return [UsageMetricKind.CLAUDE_FIVE_HOUR, UsageMetricKind.CLAUDE_WEEKLY]
@@ -96,7 +97,7 @@ class TrayIcon:
                     rows.append(f"{name}   {_text_bar(used)}  {int(round(used * 100))}%")
         return rows
 
-    def _menu_item(self, label: str, icon_name: str, on_activate) -> "Gtk.MenuItem":
+    def _menu_item(self, label: str, icon_name: str, on_activate) -> Gtk.MenuItem:
         try:
             item = Gtk.ImageMenuItem(label=label)
             item.set_image(Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.MENU))

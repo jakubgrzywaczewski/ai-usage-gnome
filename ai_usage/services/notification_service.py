@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from ai_usage.domain.localization import L10nKey, Localizer
 from ai_usage.domain.models import (

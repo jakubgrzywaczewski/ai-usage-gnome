@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk, Gtk, GdkPixbuf, Pango
 
-from ai_usage.domain.models import ProviderID, UsageMetric, UsageMetricKind
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gdk, GdkPixbuf, Gtk
+
+from ai_usage.domain.models import ProviderID
 
 
 def _resources_dir() -> str:
@@ -36,8 +36,8 @@ def _tint(pixbuf: GdkPixbuf.Pixbuf, rgb: tuple[float, float, float]) -> GdkPixbu
 
 
 def load_provider_icon(
-    provider: ProviderID, size: int = 24, tint: Optional[tuple[float, float, float]] = None
-) -> Optional[GdkPixbuf.Pixbuf]:
+    provider: ProviderID, size: int = 24, tint: tuple[float, float, float] | None = None
+) -> GdkPixbuf.Pixbuf | None:
     svg_path = os.path.join(_resources_dir(), f"{provider.icon_resource_name}.svg")
     if not os.path.exists(svg_path):
         return None
@@ -53,13 +53,13 @@ def load_provider_icon(
     return pixbuf
 
 
-def percentage_text(fraction: Optional[float]) -> str:
+def percentage_text(fraction: float | None) -> str:
     if fraction is None:
         return "-%"
     return f"{int(round(fraction * 100))}%"
 
 
-def usage_percentage_text(remaining_fraction: Optional[float]) -> str:
+def usage_percentage_text(remaining_fraction: float | None) -> str:
     """Render how much of a limit has been *used* from its remaining fraction."""
     if remaining_fraction is None:
         return "—"
@@ -74,13 +74,13 @@ class UsageBar(Gtk.DrawingArea):
     bar shows ``1 - remaining_fraction`` so a fuller bar means less headroom.
     """
 
-    def __init__(self, remaining_fraction: Optional[float] = None, height: int = 10):
+    def __init__(self, remaining_fraction: float | None = None, height: int = 10):
         super().__init__()
         self._remaining = remaining_fraction
         self.set_size_request(-1, height)
         self.connect("draw", self._on_draw)
 
-    def set_fraction(self, remaining_fraction: Optional[float]):
+    def set_fraction(self, remaining_fraction: float | None):
         self._remaining = remaining_fraction
         self.queue_draw()
 
@@ -113,13 +113,13 @@ RemainingBar = UsageBar
 class TimeBar(Gtk.DrawingArea):
     """A thin blue bar showing expected time remaining."""
 
-    def __init__(self, fraction: Optional[float] = None, height: int = 4):
+    def __init__(self, fraction: float | None = None, height: int = 4):
         super().__init__()
         self._fraction = fraction
         self.set_size_request(-1, height)
         self.connect("draw", self._on_draw)
 
-    def set_fraction(self, fraction: Optional[float]):
+    def set_fraction(self, fraction: float | None):
         self._fraction = fraction
         self.queue_draw()
 
@@ -156,10 +156,10 @@ def _rounded_rect(cr, x, y, w, h, r):
 def create_metric_card(
     title: str,
     value_text: str,
-    remaining_fraction: Optional[float],
-    reset_text: Optional[str],
+    remaining_fraction: float | None,
+    reset_text: str | None,
     is_credits: bool = False,
-    note: Optional[str] = None,
+    note: str | None = None,
 ) -> Gtk.Frame:
     frame = Gtk.Frame()
     frame.set_shadow_type(Gtk.ShadowType.NONE)

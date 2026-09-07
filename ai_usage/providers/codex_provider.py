@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import requests
 
@@ -20,7 +20,6 @@ from ai_usage.domain.models import (
 )
 from ai_usage.services.log_store import LogStore
 
-
 REFRESH_ENDPOINT = "https://auth.openai.com/oauth/token"
 CLIENT_ID = "app_EMoamEEZ73f0CkXaXp7hrann"
 DEFAULT_BASE_URL = "https://chatgpt.com/backend-api/"
@@ -30,9 +29,9 @@ DEFAULT_BASE_URL = "https://chatgpt.com/backend-api/"
 class CodexOAuthCredentials:
     access_token: str
     refresh_token: str = ""
-    id_token: Optional[str] = None
-    account_id: Optional[str] = None
-    last_refresh: Optional[datetime] = None
+    id_token: str | None = None
+    account_id: str | None = None
+    last_refresh: datetime | None = None
 
     @property
     def needs_refresh(self) -> bool:
@@ -61,7 +60,7 @@ def _load_credentials() -> CodexOAuthCredentials:
     try:
         data = json.loads(auth_file.read_text(encoding="utf-8"))
     except Exception as e:
-        raise CodexAuthError(f"Codex CLI auth could not be read: {e}")
+        raise CodexAuthError(f"Codex CLI auth could not be read: {e}") from e
     return _parse_credentials(data)
 
 
@@ -201,7 +200,7 @@ def _resolve_usage_url(base_url: str) -> str:
     return base_url.rstrip("/") + "/api/codex/usage"
 
 
-def _parse_api_metric(window: dict, kind: UsageMetricKind, now: datetime) -> Optional[UsageMetric]:
+def _parse_api_metric(window: dict, kind: UsageMetricKind, now: datetime) -> UsageMetric | None:
     used_percent = _number(window.get("used_percent"))
     if used_percent is None:
         return None
@@ -226,7 +225,7 @@ def _is_codex_spark_limit(item: dict) -> bool:
     return item.get("limit_name") == "GPT-5.3-Codex-Spark" or item.get("metered_feature") == "codex_bengalfox"
 
 
-def _classify_window(window: dict, five_hour_kind: UsageMetricKind, weekly_kind: UsageMetricKind) -> Optional[UsageMetricKind]:
+def _classify_window(window: dict, five_hour_kind: UsageMetricKind, weekly_kind: UsageMetricKind) -> UsageMetricKind | None:
     """Map a rate-limit window to a metric kind by its duration.
 
     The API used to return a short window as ``primary_window`` and the weekly
@@ -300,14 +299,14 @@ def _parse_usage_payload(payload: dict, now: datetime) -> list[UsageMetric]:
     return metrics
 
 
-def _clean(value: Any) -> Optional[str]:
+def _clean(value: Any) -> str | None:
     if isinstance(value, str):
         v = value.strip()
         return v if v else None
     return None
 
 
-def _number(value: Any) -> Optional[float]:
+def _number(value: Any) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, str):
@@ -318,7 +317,7 @@ def _number(value: Any) -> Optional[float]:
     return None
 
 
-def _parse_iso_date(value: Any) -> Optional[datetime]:
+def _parse_iso_date(value: Any) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
     for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"):

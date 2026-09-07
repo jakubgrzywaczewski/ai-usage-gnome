@@ -5,7 +5,6 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 import requests
 
@@ -20,7 +19,6 @@ from ai_usage.domain.models import (
 )
 from ai_usage.services.log_store import LogStore
 
-
 USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
 FALLBACK_USER_AGENT = "claude-code/2.1.0"
 
@@ -28,9 +26,9 @@ FALLBACK_USER_AGENT = "claude-code/2.1.0"
 @dataclass
 class ClaudeOAuthCredentials:
     access_token: str
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
     scopes: list[str] = None
-    rate_limit_tier: Optional[str] = None
+    rate_limit_tier: str | None = None
 
     def __post_init__(self):
         if self.scopes is None:
@@ -58,7 +56,7 @@ def _load_credentials() -> ClaudeOAuthCredentials:
     return _parse_credentials(data)
 
 
-def _load_from_file() -> Optional[dict]:
+def _load_from_file() -> dict | None:
     env = os.environ
     config_dir_raw = env.get("CLAUDE_CONFIG_DIR", "")
     first_segment = config_dir_raw.split(",")[0].strip() if config_dir_raw else ""
@@ -100,7 +98,7 @@ def _parse_credentials(data: dict) -> ClaudeOAuthCredentials:
     )
 
 
-def _parse_reset_date(s: Optional[str]) -> Optional[datetime]:
+def _parse_reset_date(s: str | None) -> datetime | None:
     if not s:
         return None
     for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"):
@@ -112,7 +110,7 @@ def _parse_reset_date(s: Optional[str]) -> Optional[datetime]:
 
 
 def _parse_usage_metrics(data: dict, now: datetime) -> list[UsageMetric]:
-    def _metric(kind: UsageMetricKind, window: Optional[dict]) -> UsageMetric:
+    def _metric(kind: UsageMetricKind, window: dict | None) -> UsageMetric:
         if window is None:
             return UsageMetric(kind=kind, last_updated_at_utc=now)
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Optional
 
 from ai_usage.domain.models import (
     ProviderID,
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class UsageStore:
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, config_dir: Path | None = None):
         if config_dir is None:
             from ai_usage.services.settings_store import _config_dir
             config_dir = _config_dir()

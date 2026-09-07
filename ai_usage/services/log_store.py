@@ -6,7 +6,6 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ class AppLogEntry:
 
 
 class LogStore:
-    def __init__(self, config_dir: Optional[Path] = None):
+    def __init__(self, config_dir: Path | None = None):
         if config_dir is None:
             from ai_usage.services.settings_store import _config_dir
             config_dir = _config_dir()

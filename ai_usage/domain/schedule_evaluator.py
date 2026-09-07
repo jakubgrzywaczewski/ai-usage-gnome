@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from calendar import monthrange
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import datetime, timedelta
 
 from ai_usage.domain.models import (
     UsageAlertDirection,
@@ -37,7 +35,7 @@ class EvaluatorResult:
     actual_remaining: float
 
 
-def _period_range(metric: UsageMetric, now: datetime) -> Optional[tuple[datetime, datetime, float]]:
+def _period_range(metric: UsageMetric, now: datetime) -> tuple[datetime, datetime, float] | None:
     reset = metric.reset_at_utc
     if reset is None:
         return None
@@ -65,7 +63,7 @@ def _period_range(metric: UsageMetric, now: datetime) -> Optional[tuple[datetime
     return None
 
 
-def _same_reset(a: Optional[datetime], b: Optional[datetime]) -> bool:
+def _same_reset(a: datetime | None, b: datetime | None) -> bool:
     """Treat two reset timestamps as the same window.
 
     The upstream APIs return a ``resets_at`` value that jitters by fractions of
@@ -85,7 +83,7 @@ class ScheduleEvaluator:
 
     def pace_assessment(
         self, metric: UsageMetric, now: datetime, trigger: float = 0.09
-    ) -> Optional[UsagePaceAssessment]:
+    ) -> UsagePaceAssessment | None:
         if metric.remaining_fraction is None:
             return None
         period = _period_range(metric, now)
@@ -116,9 +114,9 @@ class ScheduleEvaluator:
         self,
         metric: UsageMetric,
         direction: UsageAlertDirection,
-        previous_state: Optional[UsageAlertState],
+        previous_state: UsageAlertState | None,
         now: datetime,
-    ) -> Optional[EvaluatorResult]:
+    ) -> EvaluatorResult | None:
         assessment = self.pace_assessment(metric, now, trigger=self.TRIGGER)
         if assessment is None:
             return None
