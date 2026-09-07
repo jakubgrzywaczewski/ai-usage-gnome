@@ -118,7 +118,8 @@ def _parse_usage_metrics(data: dict, now: datetime) -> list[UsageMetric]:
 
         utilization = window.get("utilization")
         if utilization is not None:
-            utilization = max(0.0, min(1.0, utilization))
+            # The API reports utilization as a percentage (e.g. 17.0 == 17%).
+            utilization = max(0.0, min(1.0, utilization / 100.0))
             remaining = max(0.0, min(1.0, 1.0 - utilization))
         else:
             remaining = None

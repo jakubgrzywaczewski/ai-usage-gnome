@@ -226,37 +226,45 @@ def _is_codex_spark_limit(item: dict) -> bool:
     return item.get("limit_name") == "GPT-5.3-Codex-Spark" or item.get("metered_feature") == "codex_bengalfox"
 
 
+def _classify_window(window: dict, five_hour_kind: UsageMetricKind, weekly_kind: UsageMetricKind) -> Optional[UsageMetricKind]:
+    """Map a rate-limit window to a metric kind by its duration.
+
+    The API used to return a short window as ``primary_window`` and the weekly
+    window as ``secondary_window``, but now returns a single window whose length
+    varies, so classify by ``limit_window_seconds`` instead of position.
+    """
+    secs = _number(window.get("limit_window_seconds"))
+    if secs is None:
+        return None
+    return five_hour_kind if secs <= 6 * 3600 else weekly_kind
+
+
+def _collect_windows(rate_limit: dict, five_hour_kind: UsageMetricKind, weekly_kind: UsageMetricKind, now: datetime) -> list[UsageMetric]:
+    collected: list[UsageMetric] = []
+    positional = {"primary_window": five_hour_kind, "secondary_window": weekly_kind}
+    for key, fallback_kind in positional.items():
+        window = rate_limit.get(key)
+        if not isinstance(window, dict):
+            continue
+        kind = _classify_window(window, five_hour_kind, weekly_kind) or fallback_kind
+        m = _parse_api_metric(window, kind, now)
+        if m and not any(existing.kind == m.kind for existing in collected):
+            collected.append(m)
+    return collected
+
+
 def _parse_usage_payload(payload: dict, now: datetime) -> list[UsageMetric]:
     metrics: list[UsageMetric] = []
 
     rate_limit = payload.get("rate_limit")
     if isinstance(rate_limit, dict):
-        pw = rate_limit.get("primary_window")
-        if isinstance(pw, dict):
-            m = _parse_api_metric(pw, UsageMetricKind.CODEX_FIVE_HOUR, now)
-            if m:
-                metrics.append(m)
-        sw = rate_limit.get("secondary_window")
-        if isinstance(sw, dict):
-            m = _parse_api_metric(sw, UsageMetricKind.CODEX_WEEKLY, now)
-            if m:
-                metrics.append(m)
+        metrics.extend(_collect_windows(rate_limit, UsageMetricKind.CODEX_FIVE_HOUR, UsageMetricKind.CODEX_WEEKLY, now))
 
     additional = payload.get("additional_rate_limits")
     if isinstance(additional, list):
         spark = next((x for x in additional if isinstance(x, dict) and _is_codex_spark_limit(x)), None)
         if spark and isinstance(spark.get("rate_limit"), dict):
-            srl = spark["rate_limit"]
-            pw = srl.get("primary_window")
-            if isinstance(pw, dict):
-                m = _parse_api_metric(pw, UsageMetricKind.CODEX_SPARK_FIVE_HOUR, now)
-                if m:
-                    metrics.append(m)
-            sw = srl.get("secondary_window")
-            if isinstance(sw, dict):
-                m = _parse_api_metric(sw, UsageMetricKind.CODEX_SPARK_WEEKLY, now)
-                if m:
-                    metrics.append(m)
+            metrics.extend(_collect_windows(spark["rate_limit"], UsageMetricKind.CODEX_SPARK_FIVE_HOUR, UsageMetricKind.CODEX_SPARK_WEEKLY, now))
 
     credits_data = payload.get("credits")
     if isinstance(credits_data, dict):
