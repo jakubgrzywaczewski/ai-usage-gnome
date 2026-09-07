@@ -5,7 +5,7 @@ from typing import Optional
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GdkPixbuf, Pango
+from gi.repository import Gdk, Gtk, GdkPixbuf, Pango
 
 from ai_usage.domain.models import ProviderID, UsageMetric, UsageMetricKind
 
@@ -14,14 +14,43 @@ def _resources_dir() -> str:
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources")
 
 
-def load_provider_icon(provider: ProviderID, size: int = 24) -> Optional[GdkPixbuf.Pixbuf]:
+def theme_fg_rgb() -> tuple[float, float, float]:
+    """The current theme's foreground colour, so brand glyphs stay visible in
+    both light and dark themes."""
+    rgba = Gtk.Label().get_style_context().get_color(Gtk.StateFlags.NORMAL)
+    return (rgba.red, rgba.green, rgba.blue)
+
+
+def _tint(pixbuf: GdkPixbuf.Pixbuf, rgb: tuple[float, float, float]) -> GdkPixbuf.Pixbuf:
+    import cairo
+
+    w, h = pixbuf.get_width(), pixbuf.get_height()
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h)
+    cr = cairo.Context(surface)
+    Gdk.cairo_set_source_pixbuf(cr, pixbuf, 0, 0)
+    cr.paint()
+    cr.set_operator(cairo.OPERATOR_IN)
+    cr.set_source_rgb(*rgb)
+    cr.paint()
+    return Gdk.pixbuf_get_from_surface(surface, 0, 0, w, h)
+
+
+def load_provider_icon(
+    provider: ProviderID, size: int = 24, tint: Optional[tuple[float, float, float]] = None
+) -> Optional[GdkPixbuf.Pixbuf]:
     svg_path = os.path.join(_resources_dir(), f"{provider.icon_resource_name}.svg")
     if not os.path.exists(svg_path):
         return None
     try:
-        return GdkPixbuf.Pixbuf.new_from_file_at_size(svg_path, size, size)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(svg_path, size, size)
     except Exception:
         return None
+    if tint is not None:
+        try:
+            return _tint(pixbuf, tint)
+        except Exception:
+            return pixbuf
+    return pixbuf
 
 
 def percentage_text(fraction: Optional[float]) -> str:
@@ -128,19 +157,19 @@ def create_metric_card(
     title: str,
     value_text: str,
     remaining_fraction: Optional[float],
-    time_fraction: Optional[float],
     reset_text: Optional[str],
     is_credits: bool = False,
+    note: Optional[str] = None,
 ) -> Gtk.Frame:
     frame = Gtk.Frame()
     frame.set_shadow_type(Gtk.ShadowType.NONE)
     frame.get_style_context().add_class("metric-card")
 
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-    box.set_margin_start(12)
-    box.set_margin_end(12)
-    box.set_margin_top(10)
-    box.set_margin_bottom(10)
+    box.set_margin_start(14)
+    box.set_margin_end(14)
+    box.set_margin_top(12)
+    box.set_margin_bottom(12)
 
     header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     title_label = Gtk.Label(label=title)
@@ -149,17 +178,19 @@ def create_metric_card(
     header.pack_start(title_label, True, True, 0)
 
     value_label = Gtk.Label(label=value_text)
+    value_label.set_valign(Gtk.Align.CENTER)
     value_label.get_style_context().add_class("metric-value")
     header.pack_end(value_label, False, False, 0)
     box.pack_start(header, False, False, 0)
 
     if not is_credits and remaining_fraction is not None:
-        bar = UsageBar(remaining_fraction)
-        box.pack_start(bar, False, False, 0)
+        box.pack_start(UsageBar(remaining_fraction), False, False, 0)
 
-        if time_fraction is not None:
-            time_bar = TimeBar(time_fraction)
-            box.pack_start(time_bar, False, False, 0)
+    if note:
+        note_label = Gtk.Label(label=note)
+        note_label.set_xalign(0)
+        note_label.get_style_context().add_class("dim-label")
+        box.pack_start(note_label, False, False, 0)
 
     if reset_text:
         reset_label = Gtk.Label(label=reset_text)

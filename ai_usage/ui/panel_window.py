@@ -14,10 +14,10 @@ from ai_usage.domain.models import (
     ProviderID,
     UsageMetricKind,
 )
-from ai_usage.domain.schedule_evaluator import ScheduleEvaluator
 from ai_usage.ui.provider_widgets import (
     create_metric_card,
     load_provider_icon,
+    theme_fg_rgb,
     usage_percentage_text,
 )
 
@@ -30,9 +30,8 @@ _CSS = b"""
     border-radius: 12px;
 }
 .metric-card {
-    background-color: alpha(@theme_fg_color, 0.04);
-    border-radius: 12px;
-    padding: 4px;
+    background-color: alpha(@theme_fg_color, 0.07);
+    border-radius: 10px;
 }
 .metric-title {
     font-size: 13px;
@@ -41,15 +40,11 @@ _CSS = b"""
 .metric-value {
     font-size: 15px;
     font-weight: 700;
-    font-family: monospace;
+    font-feature-settings: "tnum";
 }
 .dim-label {
     font-size: 11px;
     opacity: 0.6;
-}
-.panel-header {
-    font-size: 16px;
-    font-weight: 700;
 }
 .provider-header {
     font-size: 14px;
@@ -66,7 +61,6 @@ class PanelWindow(Gtk.Window):
     def __init__(self, env: AppEnvironment):
         super().__init__(type=Gtk.WindowType.TOPLEVEL)
         self._env = env
-        self._evaluator = ScheduleEvaluator()
         self._timer_id = None
 
         self.set_title("AI Usage")
@@ -83,7 +77,7 @@ class PanelWindow(Gtk.Window):
             Gdk.Screen.get_default(), css, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        self._content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        self._content_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18)
         self._content_box.set_margin_start(16)
         self._content_box.set_margin_end(16)
         self._content_box.set_margin_top(16)
@@ -139,22 +133,14 @@ class PanelWindow(Gtk.Window):
         loc = self._env.localizer
         now = datetime.now(timezone.utc)
 
-        header = Gtk.Label(label=loc.text(L10nKey.USAGE_PANEL_TITLE))
-        header.set_xalign(0)
-        header.get_style_context().add_class("panel-header")
-        self._content_box.pack_start(header, False, False, 0)
-
-        self._content_box.pack_start(Gtk.Separator(), False, False, 0)
-
         prefs = self._env.settings.preferences
         visible = sorted(prefs.visible_panel_providers, key=lambda p: p.value)
 
         for provider in visible:
             self._build_provider(provider, now)
 
-        self._content_box.pack_start(Gtk.Separator(), False, False, 0)
-
         self._footer_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        self._footer_box.set_margin_top(2)
 
         settings_btn = Gtk.Button(label=loc.text(L10nKey.OPEN_SETTINGS))
         settings_btn.connect("clicked", lambda _: self._env.show_settings())
@@ -181,7 +167,7 @@ class PanelWindow(Gtk.Window):
         prov_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
 
         hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        icon = load_provider_icon(provider, 24)
+        icon = load_provider_icon(provider, 18, tint=theme_fg_rgb())
         if icon:
             img = Gtk.Image.new_from_pixbuf(icon)
             hdr.pack_start(img, False, False, 0)
@@ -192,6 +178,7 @@ class PanelWindow(Gtk.Window):
 
         link_btn = Gtk.LinkButton.new_with_label(provider.usage_settings_url, "↗")
         link_btn.set_relief(Gtk.ReliefStyle.NONE)
+        link_btn.set_tooltip_text(loc.text(L10nKey.OPEN_PROVIDER_USAGE_PAGE))
         hdr.pack_end(link_btn, False, False, 0)
 
         prov_box.pack_start(hdr, False, False, 0)
@@ -210,19 +197,20 @@ class PanelWindow(Gtk.Window):
         if snapshot and snapshot.fetch_state != ProviderFetchState.MISSING_AUTH:
             for kind in self._metrics_for(provider):
                 metric = snapshot.metric(kind) if snapshot else None
-                pace = self._evaluator.pace_assessment(metric, now) if metric else None
-
-                value = self._value_text(kind, metric)
-                reset = self._reset_text(metric, now)
                 is_credits = kind == UsageMetricKind.CODEX_CREDITS
+
+                has_data = metric is not None and (
+                    metric.remaining_fraction is not None or metric.remaining_value is not None
+                )
+                note = None if (has_data or is_credits) else loc.text(L10nKey.NO_USAGE_DATA)
 
                 card = create_metric_card(
                     title=loc.metric_title(kind),
-                    value_text=value,
+                    value_text="—" if note else self._value_text(kind, metric),
                     remaining_fraction=metric.remaining_fraction if metric else None,
-                    time_fraction=pace.expected_remaining if pace else None,
-                    reset_text=reset,
+                    reset_text=self._reset_text(metric, now) if has_data else None,
                     is_credits=is_credits,
+                    note=note,
                 )
                 prov_box.pack_start(card, False, False, 0)
 

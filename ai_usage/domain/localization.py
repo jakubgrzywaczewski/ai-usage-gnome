@@ -22,6 +22,7 @@ class L10nKey(str, enum.Enum):
     LAST_UPDATE = "lastUpdate"
     REFRESH_NOW = "refreshNow"
     OPEN_SETTINGS = "openSettings"
+    OPEN_PROVIDER_USAGE_PAGE = "openProviderUsagePage"
     STALE_DATA = "staleData"
     AUTHENTICATION_REQUIRED = "authenticationRequired"
     AUTHENTICATE_IN_SETTINGS = "authenticateInSettings"
@@ -123,6 +124,7 @@ _ENGLISH: dict[L10nKey, str] = {
     L10nKey.LAST_UPDATE: "Last update",
     L10nKey.REFRESH_NOW: "Refresh now",
     L10nKey.OPEN_SETTINGS: "Settings",
+    L10nKey.OPEN_PROVIDER_USAGE_PAGE: "Open the provider's usage page",
     L10nKey.STALE_DATA: "Stale data",
     L10nKey.AUTHENTICATION_REQUIRED: "Authentication required",
     L10nKey.AUTHENTICATE_IN_SETTINGS: "Open Settings to authenticate providers.",
@@ -224,6 +226,7 @@ _POLISH: dict[L10nKey, str] = {
     L10nKey.LAST_UPDATE: "Ostatnia aktualizacja",
     L10nKey.REFRESH_NOW: "Odśwież teraz",
     L10nKey.OPEN_SETTINGS: "Ustawienia",
+    L10nKey.OPEN_PROVIDER_USAGE_PAGE: "Otwórz stronę zużycia u dostawcy",
     L10nKey.STALE_DATA: "Nieaktualne dane",
     L10nKey.AUTHENTICATION_REQUIRED: "Wymagana autoryzacja",
     L10nKey.AUTHENTICATE_IN_SETTINGS: "Otwórz Ustawienia, aby skonfigurować dostęp do usług.",
