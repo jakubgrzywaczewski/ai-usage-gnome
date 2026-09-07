@@ -18,7 +18,7 @@ from ai_usage.domain.schedule_evaluator import ScheduleEvaluator
 from ai_usage.ui.provider_widgets import (
     create_metric_card,
     load_provider_icon,
-    percentage_text,
+    usage_percentage_text,
 )
 
 if TYPE_CHECKING:
@@ -240,13 +240,13 @@ class PanelWindow(Gtk.Window):
         return [UsageMetricKind.COPILOT_MONTHLY]
 
     def _value_text(self, kind: UsageMetricKind, metric) -> str:
+        loc = self._env.localizer
         if metric is None:
-            return "-%" if kind != UsageMetricKind.CODEX_CREDITS else "-"
+            return "-" if kind == UsageMetricKind.CODEX_CREDITS else loc.text(L10nKey.NO_USAGE_DATA)
         if metric.unit.value in ("percentage", "requests"):
             if metric.remaining_fraction is not None:
-                return percentage_text(metric.remaining_fraction)
-            if metric.remaining_value is not None:
-                return str(int(round(metric.remaining_value)))
+                return usage_percentage_text(metric.remaining_fraction)
+            return loc.text(L10nKey.NO_USAGE_DATA)
         elif metric.unit.value == "credits":
             if metric.remaining_value is not None:
                 return str(int(round(metric.remaining_value)))

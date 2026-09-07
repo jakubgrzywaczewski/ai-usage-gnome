@@ -30,17 +30,29 @@ def percentage_text(fraction: Optional[float]) -> str:
     return f"{int(round(fraction * 100))}%"
 
 
-class RemainingBar(Gtk.DrawingArea):
-    """A colored progress bar showing remaining fraction."""
+def usage_percentage_text(remaining_fraction: Optional[float]) -> str:
+    """Render how much of a limit has been *used* from its remaining fraction."""
+    if remaining_fraction is None:
+        return "—"
+    used = max(0.0, min(1.0, 1.0 - remaining_fraction))
+    return f"{int(round(used * 100))}%"
 
-    def __init__(self, fraction: Optional[float] = None, height: int = 10):
+
+class UsageBar(Gtk.DrawingArea):
+    """A colored progress bar that fills up as a limit is consumed.
+
+    ``remaining_fraction`` is what the API reports (1.0 == nothing used); the
+    bar shows ``1 - remaining_fraction`` so a fuller bar means less headroom.
+    """
+
+    def __init__(self, remaining_fraction: Optional[float] = None, height: int = 10):
         super().__init__()
-        self._fraction = fraction
+        self._remaining = remaining_fraction
         self.set_size_request(-1, height)
         self.connect("draw", self._on_draw)
 
-    def set_fraction(self, fraction: Optional[float]):
-        self._fraction = fraction
+    def set_fraction(self, remaining_fraction: Optional[float]):
+        self._remaining = remaining_fraction
         self.queue_draw()
 
     def _on_draw(self, widget, cr):
@@ -51,18 +63,22 @@ class RemainingBar(Gtk.DrawingArea):
         _rounded_rect(cr, 0, 0, w, h, h / 2)
         cr.fill()
 
-        if self._fraction is not None:
-            f = max(0.0, min(1.0, self._fraction))
-            if f < 0.1:
+        if self._remaining is not None:
+            used = max(0.0, min(1.0, 1.0 - self._remaining))
+            if used > 0.9:
                 cr.set_source_rgba(0.9, 0.2, 0.2, 0.95)
-            elif f < 0.3:
+            elif used > 0.7:
                 cr.set_source_rgba(0.9, 0.8, 0.1, 0.95)
             else:
                 cr.set_source_rgba(0.2, 0.8, 0.2, 0.95)
-            _rounded_rect(cr, 0, 0, w * f, h, h / 2)
+            _rounded_rect(cr, 0, 0, max(w * used, h if used > 0 else 0), h, h / 2)
             cr.fill()
 
         return False
+
+
+# Backwards-compatible alias.
+RemainingBar = UsageBar
 
 
 class TimeBar(Gtk.DrawingArea):
@@ -137,8 +153,8 @@ def create_metric_card(
     header.pack_end(value_label, False, False, 0)
     box.pack_start(header, False, False, 0)
 
-    if not is_credits:
-        bar = RemainingBar(remaining_fraction)
+    if not is_credits and remaining_fraction is not None:
+        bar = UsageBar(remaining_fraction)
         box.pack_start(bar, False, False, 0)
 
         if time_fraction is not None:

@@ -16,6 +16,7 @@ class L10nKey(str, enum.Enum):
     MENU_BAR_APP_NAME = "menuBarAppName"
     NOT_CONFIGURED = "notConfigured"
     UNAVAILABLE = "unavailable"
+    NO_USAGE_DATA = "noUsageData"
     USAGE_PANEL_TITLE = "usagePanelTitle"
     SETTINGS_TITLE = "settingsTitle"
     LAST_UPDATE = "lastUpdate"
@@ -116,6 +117,7 @@ _ENGLISH: dict[L10nKey, str] = {
     L10nKey.MENU_BAR_APP_NAME: "AI Usage",
     L10nKey.NOT_CONFIGURED: "Not configured",
     L10nKey.UNAVAILABLE: "Unavailable",
+    L10nKey.NO_USAGE_DATA: "No data for this plan",
     L10nKey.USAGE_PANEL_TITLE: "AI Usage",
     L10nKey.SETTINGS_TITLE: "Settings",
     L10nKey.LAST_UPDATE: "Last update",
@@ -216,6 +218,7 @@ _POLISH: dict[L10nKey, str] = {
     L10nKey.MENU_BAR_APP_NAME: "Użycie AI",
     L10nKey.NOT_CONFIGURED: "Nie skonfigurowano",
     L10nKey.UNAVAILABLE: "Niedostępne",
+    L10nKey.NO_USAGE_DATA: "Brak danych dla tego planu",
     L10nKey.USAGE_PANEL_TITLE: "Użycie AI",
     L10nKey.SETTINGS_TITLE: "Ustawienia",
     L10nKey.LAST_UPDATE: "Ostatnia aktualizacja",
